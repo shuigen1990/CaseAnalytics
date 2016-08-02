@@ -1,0 +1,644 @@
+---
+title: "北京二手房价格预测分析"
+author: "温水根"
+date: "2016年7月"
+output:
+  slidy_presentation: default
+  ioslides_presentation:
+    lib_dir: libs
+    self_contained: no
+    widescreen: yes
+  beamer_presentation: default
+css: ../assets/custom.css
+---
+
+## 背景介绍
+
+- 北京市房地产市场是我国房地产市场中最为发达，也是最具有代表性的房地产市场之一。
+- 什么样的因素影响着北京市商品房的销售价格？
+- 价格上的巨大差异又是如何产生的？
+- 本案例通过北京城内六区16142套在售二手房相关数据，通过经典的线性回归分析建立了二手房价格预测模型
+
+## 目录
+
+- 数据来源
+- 数据清洗
+- 描述性分析
+    - 区位因素：城区、地铁、学区
+    - 内部因素：卧室数、客厅数、面积、楼层
+- 数据建模
+    - 简单线性模型：解读->诊断->模型改进
+    - 对数线性模型：解读->关心位置因素->城区与学区交互
+    - 带有交叉项的模型：模型解读
+- 预测
+- 结论和建议
+
+# 数据来源和说明
+
+## 数据来源
+
+- 数据来自某二手房中介网站
+- 2016年5月，北京在售二手房的相关数据
+- 样本量n=16142
+
+## 字段说明
+
+- price:每平米均价(元)，2016年5月在售二手房每平米单价
+- CATE：东城、西城、朝阳、海淀、丰台、石景山
+- bedrooms：卧室数，即为3室2厅中的“3室”
+- halls：厅总数，即为3室2厅中的“2厅”
+- AREA：房屋总面积
+- Floor：basement/low/middle/high  分别为地下室，低楼层，中楼层，高楼层
+- subway：是否地铁沿线
+- school：是否为学区房
+- LONG：所在小区的经度
+- LAT：所在小区的纬度
+- NAME：小区名称，如（南曦大厦）
+- DISTRICT：区域名称，如（木樨园）
+
+# 数据清洗
+
+## 数据导入
+
+```{r}
+setwd('F:/case/北京二手房/')
+dat <- read.csv('二手房.csv', header = T)
+str(dat)
+```
+
+## 
+
+```{r}
+head(dat)
+```
+
+##
+
+```{r}
+dat[, c(2,3,6,7)] <- as.data.frame(apply(dat[, c(2,3,6,7)], 2, as.factor)) #将2,3,6,7列转化为因子型变量
+summary(dat) #数据概述可以看出，在考虑现实情况下很多字段存在异常值
+```
+
+## 删除异常值
+
+```{r,eval=FALSE}
+apply(dat[,c(1,2,3,5)], 2, table)
+```
+
+##
+
+```{r,echo=FALSE}
+apply(dat[,c(1,2,3,5)], 2, table)
+```
+
+##
+
+```{r}
+dat <- dat[!(dat$bedrooms %in% c(0,6,7,8,9)), ] #卧室数0,6,7,8,9的观测很少，考虑删除
+dat <- dat[!(dat$halls %in% c(4,9)), ] #客厅数4,9的观测很少，考虑删除
+dat <- dat[dat$floor != 'basement ', ] #地下室的观测数少，我们可以做删除处理
+```
+
+##
+### 房屋面积分布
+
+```{r}
+quantile(dat$AREA) #从数据可以看出，有异常值出现，不太符合现实情况
+quantile(dat$AREA, probs = c(0.01,0.99)) #查看1%和99%的分位数
+dat <- dat[dat$AREA>34 & dat$AREA<300, ] #删除房屋面积小于30或者大于300平米的观测值
+```
+
+##
+### 房价分布
+
+```{r}
+quantile(dat$price) #有许多异常值
+quantile(dat$price, probs = c(0.001,0.999)) #查看0.1%和99.9%的分位数
+dat <- dat[dat$price>21000 & dat$price<150000, ]
+```
+
+##
+### 北京的经纬度取值范围
+
+```{r}
+dat <- dat[dat$LONG>=115.5 & dat$LONG <= 117.5, ] #经度115.5~117.5
+dat <- dat[dat$LAT>=39.5 & dat$LAT <= 41, ] #纬度39.5~41
+```
+
+## 是否临近地铁
+
+```{r}
+prop.table(table(dat$subway)) #82.8%的观测临近地铁
+```
+
+## 是否为学区房
+
+```{r}
+prop.table(table(dat$school)) #30.3%的观测是学区房
+```
+
+## 保存清洗后的数据
+
+```{r}
+write.csv(dat, file='mydata.csv',row.names = F)
+```
+
+# 描述性分析
+
+## 数据导入
+
+```{r}
+dat <- read.csv('mydata.csv', header = T)
+str(dat)
+```
+
+##
+
+```{r}
+head(dat)
+```
+
+##
+
+```{r}
+#将bedrooms,halls,subway和school字段转化为因子类型数据
+dat[, c(2,3,6,7)] <- as.data.frame(apply(dat[, c(2,3,6,7)], 2, as.factor)) 
+summary(dat)
+```
+
+##
+
+在做分析之前，将CATE和floor字段的取值换成中文，以便作图输出美观
+
+```{r}
+dict1 <- levels(dat$CATE)
+dict2 <- c('朝阳','东城','丰台','海淀','石景山','西城')
+dat$CATE <- as.factor(dict2[match(dat$CATE, dict1)])
+
+dict3 <- levels(dat$floor)
+dict4 <- c('高','低','中')
+dat$floor <- as.factor(dict4[match(dat$floor, dict3)])
+```
+
+## 北京市场二手房房价分布图
+
+```{r,eval=FALSE}
+dat$price <- dat$price/10000  #单位转化为万元
+library(ggplot2)
+ggplot(dat, aes(x=price)) + 
+  geom_histogram(bins=13, fill='lightblue', color='black') + 
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='单位面积房价(万元/平方米)', y='频数', title='2016年5月北京市二手房单价分布图') +
+  scale_x_continuous(breaks=c(2:15))
+```
+
+##
+
+```{r, echo=FALSE}
+dat$price <- dat$price/10000  #单位转化为万元
+library(ggplot2)
+ggplot(dat, aes(x=price)) + 
+  geom_histogram(bins=13, fill='lightblue', color='black') + 
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='单位面积房价(万元/平方米)', y='频数', title='2016年5月北京市二手房单价分布图') +
+  scale_x_continuous(breaks=c(2:15))
+```
+
+##
+
+```{r}
+dat[which.max(dat$price), ] #求出房价最高的观测值
+dat[which.min(dat$price), ] #求出房价最低的观测值
+```
+
+- **最高14.99万/平方米：**来自西城区金融街新文化街小区的一套一室三厅，总面积77.4平米，低楼层，临近地铁，非学区房
+- **最低2.1万/平方米：**来自丰台区卢沟桥晓月苑三里小区的一套四室二厅，总面积171平米，高楼层，不临近地铁，非学区房
+
+## 六大城区对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=CATE,y=price)) + 
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='城区', y='单位面积房价(万元)', title='2016年5月北京市六大城区二手房单价分布图') +
+  scale_x_discrete(limits=c('石景山','丰台','朝阳','东城','海淀','西城'))
+```
+
+## 
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=CATE,y=price)) + 
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='城区', y='单位面积房价(万元)', title='2016年5月北京市六大城区二手房单价分布图') +
+  scale_x_discrete(limits=c('石景山','丰台','朝阳','东城','海淀','西城'))
+```
+
+由图可知，六大城区的二手房单价大致可以分为两组：
+
+- 第一组为石景山、丰台、朝阳，单价相差不多，朝阳相对来说高单价的会更多些。
+- 第二组为东城、海淀、西城，组内单价相差不大，但相对第一组来说单价高了很多。
+
+## 卧室数对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=bedrooms,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='卧室数', y='单位面积房价(万元)',   title='卧室数与二手房单价之间的分布图') 
+```
+
+##
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=bedrooms,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='卧室数', y='单位面积房价(万元)', title='卧室数与二手房单价之间的分布图')
+```
+
+由图可知，卧室数对整个二手房的单价影响不大。
+
+## 厅数对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=halls,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='厅数', y='单位面积房价(万元)', title='厅数与二手房单价之间的分布图')
+```
+
+##
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=halls,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='厅数', y='单位面积房价(万元)', title='厅数与二手房单价之间的分布图')
+```
+
+由图可知，厅数越少，单位面积的房价越高
+
+## 楼层对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=floor,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='楼层', y='单位面积房价(万元)', title='楼层与二手房单价之间的分布图') + 
+  scale_x_discrete(limits=c('低','中','高'))
+```
+
+##
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=floor,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), color='red')) +
+  labs(x='楼层', y='单位面积房价(万元)', title='楼层与二手房单价之间的分布图') + 
+  scale_x_discrete(limits=c('低','中','高'))
+```
+
+不同楼层的单位面积房价差异并不明显
+
+## 是否临近地铁对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=subway,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), colour = 'red')) +
+  labs(x='临近地铁', y='单位面积房价(万元)', title='地铁房的单价分布图') +
+  scale_x_discrete(labels = c('否', '是'))
+```
+
+##
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=subway,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), colour = 'red')) +
+  labs(x='临近地铁', y='单位面积房价(万元)', title='地铁房的单价分布图') +
+  scale_x_discrete(labels = c('否', '是'))
+```
+
+## 是否学区房对房价的分组箱线图
+
+```{r,eval=FALSE}
+ggplot(dat, aes(x=school,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), colour = 'red')) +
+  labs(x='学区房', y='单位面积房价(万元)', title='学区房的单价分布图') +
+  scale_x_discrete(labels = c('否', '是'))
+```
+
+##
+
+```{r,echo=FALSE}
+ggplot(dat, aes(x=school,y=price)) +
+  geom_boxplot(fill='lightblue') +
+  theme(axis.text.x=element_text(size=rel(1.5)), axis.text.y=element_text(size=rel(1.5)),
+        axis.title.x=element_text(size=rel(1.5)), axis.title.y=element_text(size=rel(1.5)),
+        plot.title=element_text(size=rel(2), colour = 'red')) +
+  labs(x='学区房', y='单位面积房价(万元)', title='学区房的单价分布图') +
+  scale_x_discrete(labels = c('否', '是'))
+```
+
+毋庸置疑，地铁房和学区房的单位面积房价都很高。
+
+# 统计建模
+
+## 模型建立
+
+综合前面的描述统计分析，我们建立线性回归模型
+
+```{r,eval=FALSE}
+modeldata <- dat[,1:8]
+dummvar <- model.matrix(price~.,modeldata)
+modeldata <- cbind(dummvar[,-1],modeldata$price)
+colnames(modeldata) <- c('CATE_dc','CATE_ft','CATE_hd','CATE_sjs','CATE_sc','bedrooms2',
+                         'bedrooms3','bedrooms4','bedrooms5','halls1','halls2','halls3',
+                         'AREA','floor_high','floor_medium','subway','school','price')
+modeldata <- as.data.frame(modeldata)
+lm1.sol <- lm(price~., data=modeldata)
+summary(lm1.sol)
+```
+
+## 
+
+```{r,echo=FALSE}
+modeldata <- dat[,1:8]
+dummvar <- model.matrix(price~.,modeldata)
+modeldata <- cbind(dummvar[,-1],modeldata$price)
+colnames(modeldata) <- c('CATE_dc','CATE_ft','CATE_hd','CATE_sjs','CATE_sc','bedrooms2',
+                         'bedrooms3','bedrooms4','bedrooms5','halls1','halls2','halls3',
+                         'AREA','floor_high','floor_medium','subway','school','price')
+modeldata <- as.data.frame(modeldata)
+lm1.sol <- lm(price~., data=modeldata)
+```
+
+从回归诊断图来看，随着预测值得增大，残差的波动也随之增大，也即存在“异方差”。
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm1.sol)
+```
+
+## 对数线性模型
+
+由于前面建立的模型存在“异方差”现象，不满足回归假设。现在我们对因变量(单位面积房价)取对数，建立对数线性模型
+
+```{r}
+lm2.sol <- lm(log(price)~., data=modeldata)
+summary(lm2.sol)
+```
+
+##
+
+从回归诊断图可以看到，“异方差”现象得到了很大改善。
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm2.sol)
+```
+
+##
+### 模型改进：逐步回归法
+
+```{r,eval=FALSE}
+lm2.step <- step(lm2.sol)
+```
+
+```{r,echo=FALSE}
+lm2.step <- step(lm2.sol)
+summary(lm2.step)
+```
+##
+### 回归诊断
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm2.step)
+```
+
+## 对数线性模型：结果解读
+
+对数线性模型的回归方程为：
+
+$$
+   \text{pri}ce={{e}^{\begin{smallmatrix} 
+ 0.266*CATE\_dc-0.154*CATE\_ft+0.235*CATE\_hd-0.195*CATE\_sjs+0.433*CATE\_sc \\ 
+ +0.02*bedrooms3+0.06*bedrooms4+0.093*bedrooms5+0.029*halls1+0.132*halls2+0.154*halls3 
+ \\ 
+ -0.0011*AREA-0.034*floor\_high-0.008*floor\_medium+0.131*subway+0.173*school+1.52 
+\end{smallmatrix}}}
+$$
+
+与线性模型不同，对数线性模型的系数估计为“增长率”。控制其它因素不变时：
+
+- **城区：**石景山区单位面积最低，西城区单位面积最高，比石景山平均贵62.8%
+- **学区房**比非学区房单位面积房价平均贵17.32%
+- **地铁房**比非地铁房单位面积房价平均贵13.09%
+- **高层房屋**单位面积房价最低，其次是中层，低层房屋单位面积房价最高
+- **卧室数**越多，房屋单位面积房价越高，其中4个卧室数相对3个卧室数来说平均贵4%
+- **客厅数**越多，房屋单位面积房价越高，3个卧室比没有卧室平均贵15.4%
+- **房屋面积**的增加会带来单位面积房价的降低
+
+## 交互模型
+
+根据前面描述性分析的结果发现，不同的城区、是否为学区房的房价有非常明显的差异。因此，在对数线性模型的基础之上，考虑更为复杂的情况：**城区和学区的交互作用**
+
+```{r}
+lm3.sol <- update(lm2.step, .~.+CATE_dc*school+CATE_ft*school+
+                    CATE_hd*school+CATE_sjs*school+CATE_sc*school)
+```
+
+##
+### 回归诊断
+
+```{r}
+par(mfrow=c(2,2))
+plot(lm3.sol)
+```
+
+##
+### 模型改进：逐步回归法
+
+```{r}
+lm3.step <- step(lm3.sol)
+
+par(mfrow=c(2,2))
+plot(lm3.step)
+```
+
+## 
+
+```{r}
+library(car)
+Anova(lm3.step)
+```
+
+##
+
+从前面的逐步回归法看到，`floor_medium`变量系数检验的显著性水平仍不理想，下面我们用`drop1`函数作进一步的逐步回归：
+
+```{r,eval=FALSE}
+drop1(lm3.step)
+lm.opt <- update(lm3.step,.~.-floor_medium)
+summary(lm.opt)
+```
+
+
+```{r,echo=FALSE}
+lm.opt <- update(lm3.step,.~.-floor_medium)
+summary(lm.opt)
+```
+
+## 模型的确立
+
+在此之前，我们共建立了`lm1.sol`，`lm2.sol`，`lm2.step`，`lm3.sol`，`lm3.step`和`lm.opt`共六个线性模型。下面我们使用AIC或BIC进行模型选择：
+
+```{r}
+AIC(lm1.sol,lm2.sol,lm2.step,lm3.sol,lm3.step,lm.opt)
+```
+
+##
+
+```{r}
+BIC(lm1.sol,lm2.sol,lm2.step,lm3.sol,lm3.step,lm.opt)
+```
+
+最终，我们选择`lm.opt`模型作为“最优”模型，回归方程为：
+
+$$
+   price={{e}^{\begin{align}
+  & 0.24\text{*}CATE\_dc-0.16\text{*}CATE\_ft+0.2\text{*}CATE\_hd-0.21\text{*}CATE\_sjs+0.41\text{*}CATE\_sc+0.02\text{*}bedrooms3 \\ 
+ & +0.06\text{*}bedrooms4+0.09\text{*}bedrooms5+0.03\text{*}halls1+0.13\text{*}halls2+0.16\text{*}halls3-0.001\text{*}AREA \\ 
+ & -0.03\text{*}floor\_high+0.13\text{*}subway+0.1*school+0.09\text{*}CATE\_dc\text{*}school+0.11\text{*}CATE\_hd\text{*}school \\ 
+ & -0.28\text{*}CATE\_sjs\text{*}school+0.09\text{*}CATE\_sc\text{*}school+1.54 \\ 
+\end{align}}}
+$$
+
+## 交互模型：结果解读
+
+- 石景山与学区交互的系数估计为负数：学区房比非学区房的单位面积房价低(`CATE_sjs*school`前面的系数为-0.28)
+- 数据原因：来自石景山区的样本中，学区房比例极低
+
+```{r,eval=FALSE}
+library(dplyr)e
+options(digits = 2)
+prop <- dat %>% group_by(CATE) %>%
+        summarize(n=length(school),p=(prop.table(table(school))*100)[2]) %>%
+        arrange(p)
+colnames(prop) <- c('学区','样本量','学区房占比(%)')
+prop
+```
+
+##
+
+```{r,echo=FALSE,message=FALSE}
+library(dplyr)
+options(digits = 2)
+prop <- dat %>% group_by(CATE) %>%
+        summarize(n=length(school),p=(prop.table(table(school))*100)[2]) %>%
+        arrange(p)
+colnames(prop) <- c('学区','样本量','学区房占比(%)')
+prop
+```
+
+## 
+
+- 客观原因：石景山区的学区资源在六个城区中相对较差
+
+```{r,echo=FALSE}
+par(mfrow=c(2,3))
+boxplot(price~school,data=dat[dat$CATE=="石景山",],main="石景山区")
+boxplot(price~school,data=dat[dat$CATE=="丰台",],main="丰台")
+boxplot(price~school,data=dat[dat$CATE=="朝阳",],main="朝阳")
+boxplot(price~school,data=dat[dat$CATE=="东城",],main="东城")
+boxplot(price~school,data=dat[dat$CATE=="海淀",],main="海淀")
+boxplot(price~school,data=dat[dat$CATE=="西城",],main="西城")
+```
+
+##
+
+- 整体而言(不考虑学区因素)，西城区与海淀区的单位面积房价之比
+
+    - 对数线性模型：
+    
+    $${{e}^{0.433-0.235}}={{e}^{0.198}}=1.218$$
+
+- **学区房房价哪家强？**
+
+    - 学区房：西城区与海淀区的单位面积房价之比
+        - 交互模型：
+        $${{e}^{0.408+0.088-0.203-0.107}}={{e}^{0.186}}=1.204$$
+    - 非学区房：西城区与海淀区的单位面积房价之比
+        - 交互模型：
+        $${{e}^{0.408-0.203}}={{e}^{0.205}}=1.228$$
+        
+- 结论：交互模型能发现更多信息！
+
+## 预测
+
+假想：一家三口，为了孩子在西城区上学，想买一套临近地铁的两室一厅学区房，面积是85平方米，中等楼层
+
+
+```{r}
+options(digits = 3)
+n1 <- modeldata[1,]
+x_new <- n1[,-18]
+x_new[1,] <- c(0,0,0,0,1,1,0,0,0,1,0,0,85,0,1,1,1)
+price <- predict(lm.opt,x_new)
+exp(price)
+```
+
+根据交互模型，预测的单位面积房价是9.04万元/平方米，总价768.4万元
+
+## 结论和建议
+
+1. 影响北京市二手房单位面积房价的主要因素有：
+
+    - 区位因素：城区、地铁、学区
+    - 内部因素：卧室数、客厅数、面积、楼层
+
+2. 使用对数线性模型，可以克服数据中存在的异方差问题
+3. 使用交互模型，能带来更好的模型解读
+
+    - “学区优势”对各城区单位面积房价的影响有所区别
+    
+## 模型扩展
+
+1. 房价的影响因素众多，应在模型中加入更多因素：
+
+    - 小区位置(如：地处几环？)
+    - 小区环境(如：绿化情况)
+    - 周边配套(如：商圈、医院等)
+    - .......
+2. 各城市情况不一致，需要进一步考虑城市特有因素
+

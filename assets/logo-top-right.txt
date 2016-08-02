@@ -1,0 +1,7 @@
+slides > slide:not(.nobackground) {
+  background-color: #FFFFFF; /* #EDE0CF; ; #CA9F9D*/
+  background-image: url("../assets/logo-top-right.png");
+  background-repeat:no-repeat; 
+  background-position:top right; 
+  background-size: 170px 73px;
+}
