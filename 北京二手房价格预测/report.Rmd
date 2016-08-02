@@ -1,16 +1,4 @@
----
-title: "北京二手房价格预测分析"
-author: "温水根"
-date: "2016年7月"
-output:
-  slidy_presentation: default
-  ioslides_presentation:
-    lib_dir: libs
-    self_contained: no
-    widescreen: yes
-  beamer_presentation: default
-css: ../assets/custom.css
----
+# 
 
 ## 背景介绍
 

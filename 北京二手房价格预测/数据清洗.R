@@ -1,4 +1,4 @@
-setwd('F:/case/北京二手房/')
+setwd('/home/wenshuigen/git/CaseAnalytics/北京二手房价格预测/')
 dat <- read.csv('二手房.csv', header=T)
 head(dat)
 str(dat)
@@ -46,11 +46,3 @@ dat <- dat[dat$LAT>=39.5 & dat$LAT <= 41, ] #纬度39.5~41
 
 ### 保存清洗后的数据
 write.csv(dat, file='mydata.csv',row.names = F)
-
-
-
-
-
-
-
-

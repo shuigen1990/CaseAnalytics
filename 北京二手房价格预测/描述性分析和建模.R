@@ -82,6 +82,7 @@ ggplot(dat, aes(x=school,y=price)) +
   scale_x_discrete(labels = c('否', '是'))
 
 # 线性回归分析预测二手房房价
+
 modeldata <- dat[,1:8]
 dummvar <- model.matrix(price~.,modeldata)
 modeldata <- cbind(dummvar[,-1],modeldata$price)
@@ -91,6 +92,8 @@ colnames(modeldata) <- c('CATE_dc','CATE_ft','CATE_hd','CATE_sjs','CATE_sc','bed
 modeldata <- as.data.frame(modeldata)
 lm1.sol <- lm(price~., data=modeldata)
 summary(lm1.sol)
+
+## 
 par(mfrow=c(2,2))
 plot(lm1.sol)
 
