@@ -57,18 +57,18 @@ dat <- read.csv('二手房.csv', header = T)
 str(dat)
 
 ## `ta.frame':    16795 obs. of  12 variables:
-##  $ CATE    : Factor w/ 6 levels "chaoyang","dongcheng",..: 1 1 4 4 3 3 4 4 4 3 ...
-##  $ bedrooms: int  1 1 5 3 2 2 2 2 2 2 ...
-##  $ halls   : int  0 1 2 2 1 1 1 1 1 2 ...
-##  $ AREA    : num  46.1 59.1 278.9 207 53.3 ...
-##  $ floor   : Factor w/ 4 levels "basement ","high",..: 4 4 2 2 3 3 3 4 4 4 ...
-##  $ subway  : int  1 1 1 1 1 1 1 1 1 1 ...
-##  $ school  : int  0 0 1 1 1 1 1 1 1 0 ...
-##  $ price   : int  48850 46540 71662 57972 71268 70690 57348 55179 45591 73585 ...
-##  $ LONG    : num  116 116 116 116 116 ...
-##  $ LAT     : num  39.9 39.9 40 40 39.9 ...
-##  $ NAME    : Factor w/ 3034 levels "10AM新坐标","10号名邸",..: 1 1 2 2 3 3 4 4 4 5 ...
-##  $ DISTRICT: Factor w/ 173 levels "CBD","安定门",..: 45 45 172 172 99 99 103 103 103 88 ...
+##  $ CATE    : Factor w/ 6 levels "chaoyang","dongcheng",.: 1 1 4 4 3 3 4 4 4 3 ..
+##  $ bedrooms: int  1 1 5 3 2 2 2 2 2 2 ..
+##  $ halls   : int  0 1 2 2 1 1 1 1 1 2 ..
+##  $ AREA    : num  46.1 59.1 278.9 207 53.3 ..
+##  $ floor   : Factor w/ 4 levels "basement ","high",.: 4 4 2 2 3 3 3 4 4 4 ..
+##  $ subway  : int  1 1 1 1 1 1 1 1 1 1 ..
+##  $ school  : int  0 0 1 1 1 1 1 1 1 0 ..
+##  $ price   : int  48850 46540 71662 57972 71268 70690 57348 55179 45591 73585 ..
+##  $ LONG    : num  116 116 116 116 116 ..
+##  $ LAT     : num  39.9 39.9 40 40 39.9 ..
+##  $ NAME    : Factor w/ 3034 levels "10AM新坐标","10号名邸",.: 1 1 2 2 3 3 4 4 4 5 ..
+##  $ DISTRICT: Factor w/ 173 levels "CBD","安定门",.: 45 45 172 172 99 99 103 103 103 88 ..
 ```
 
 ```{r}
@@ -232,18 +232,18 @@ dat <- read.csv('mydata.csv', header = T)
 str(dat)
 
 ## 'data.frame':    16142 obs. of  12 variables:
-##  $ CATE    : Factor w/ 6 levels "chaoyang","dongcheng",..: 1 1 4 4 3 3 4 4 4 3 ...
-##  $ bedrooms: int  1 1 5 3 2 2 2 2 2 2 ...
-##  $ halls   : int  0 1 2 2 1 1 1 1 1 2 ...
-##  $ AREA    : num  46.1 59.1 278.9 207 53.3 ...
-##  $ floor   : Factor w/ 3 levels "high","low","middle": 3 3 1 1 2 2 2 3 3 3 ...
-##  $ subway  : int  1 1 1 1 1 1 1 1 1 1 ...
-##  $ school  : int  0 0 1 1 1 1 1 1 1 0 ...
-##  $ price   : int  48850 46540 71662 57972 71268 70690 57348 55179 45591 73585 ...
-##  $ LONG    : num  116 116 116 116 116 ...
-##  $ LAT     : num  39.9 39.9 40 40 39.9 ...
-##  $ NAME    : Factor w/ 2951 levels "10AM新坐标","10号名邸",..: 1 1 2 2 3 3 4 4 4 5 ...
-##  $ DISTRICT: Factor w/ 173 levels "CBD","安定门",..: 45 45 172 172 99 99 103 103 103 88 ...
+##  $ CATE    : Factor w/ 6 levels "chaoyang","dongcheng",.: 1 1 4 4 3 3 4 4 4 3 ..
+##  $ bedrooms: int  1 1 5 3 2 2 2 2 2 2 ..
+##  $ halls   : int  0 1 2 2 1 1 1 1 1 2 ..
+##  $ AREA    : num  46.1 59.1 278.9 207 53.3 ..
+##  $ floor   : Factor w/ 3 levels "high","low","middle": 3 3 1 1 2 2 2 3 3 3 ..
+##  $ subway  : int  1 1 1 1 1 1 1 1 1 1 ..
+##  $ school  : int  0 0 1 1 1 1 1 1 1 0 ..
+##  $ price   : int  48850 46540 71662 57972 71268 70690 57348 55179 45591 73585 ..
+##  $ LONG    : num  116 116 116 116 116 ..
+##  $ LAT     : num  39.9 39.9 40 40 39.9 ..
+##  $ NAME    : Factor w/ 2951 levels "10AM新坐标","10号名邸",.: 1 1 2 2 3 3 4 4 4 5 ..
+##  $ DISTRICT: Factor w/ 173 levels "CBD","安定门",.: 45 45 172 172 99 99 103 103 103 88 ..
 ```
 
 ```{r}
@@ -322,7 +322,7 @@ ggplot(dat, aes(x=price)) +
   scale_x_continuous(breaks=c(2:15))
 ```
 
-![p1](../pictures/p1.png)
+![p1](./pictures/p1.png)
 
 ```{r}
 dat[which.max(dat$price), ] #求出房价最高的观测值
@@ -349,7 +349,7 @@ ggplot(dat, aes(x=CATE,y=price)) +
   scale_x_discrete(limits=c('石景山','丰台','朝阳','东城','海淀','西城'))
 ```
 
-![p2](../pictures/p2.png)
+![p2](./pictures/p2.png)
 
 由图可知，六大城区的二手房单价大致可以分为两组：
 
@@ -367,7 +367,7 @@ ggplot(dat, aes(x=bedrooms,y=price)) +
   labs(x='卧室数', y='单位面积房价(万元)',   title='卧室数与二手房单价之间的分布图') 
 ```
 
-![p3](../pictures/p3.png)
+![p3](./pictures/p3.png)
 
 
 由图可知，卧室数对整个二手房的单价影响不大。
@@ -383,7 +383,7 @@ ggplot(dat, aes(x=halls,y=price)) +
   labs(x='厅数', y='单位面积房价(万元)', title='厅数与二手房单价之间的分布图')
 ```
 
-![p4](../pictures/p4.png)
+![p4](./pictures/p4.png)
 
 
 由图可知，厅数越少，单位面积的房价越高
@@ -400,7 +400,7 @@ ggplot(dat, aes(x=floor,y=price)) +
   scale_x_discrete(limits=c('低','中','高'))
 ```
 
-![p5](../pictures/p5.png)
+![p5](./pictures/p5.png)
 
 
 不同楼层的单位面积房价差异并不明显
@@ -417,7 +417,7 @@ ggplot(dat, aes(x=subway,y=price)) +
   scale_x_discrete(labels = c('否', '是'))
 ```
 
-![p6](../pictures/p6.png)
+![p6](./pictures/p6.png)
 
 ### 是否学区房对房价的分组箱线图
 
@@ -431,7 +431,7 @@ ggplot(dat, aes(x=school,y=price)) +
   scale_x_discrete(labels = c('否', '是'))
 ```
 
-![p7](../pictures/p7.png)
+![p7](./pictures/p7.png)
 
 毋庸置疑，地铁房和学区房的单位面积房价都很高。
 
@@ -458,9 +458,10 @@ summary(lm1.sol)
 ```{r}
 par(mfrow=c(2,2))
 plot(lm1.sol)
+plot(lm1.sol)
 ```
 
-![p8](../pictures/p8.png)
+![p8](./pictures/p8.png)
 
 ### 对数线性模型
 
@@ -513,7 +514,7 @@ par(mfrow=c(2,2))
 plot(lm2.sol)
 ```
 
-![p9](../pictures/p9.png)
+![p9](./pictures/p9.png)
 
 #### 模型改进：逐步回归法
 
@@ -616,7 +617,7 @@ par(mfrow=c(2,2))
 plot(lm2.step)
 ```
 
-![图十](../pictures/p10.png)
+![图十](./pictures/p10.png)
 
 
 #### 对数线性模型：结果解读
@@ -647,7 +648,7 @@ par(mfrow=c(2,2))
 plot(lm3.sol)
 ```
 
-![图11](../pictures/p11.png)
+![图11](./pictures/p11.png)
 
 #### 模型改进：逐步回归法
 
@@ -708,7 +709,7 @@ par(mfrow=c(2,2))
 plot(lm3.step)
 ```
 
-![p12](../pictures/p12.png)
+![p12](./pictures/p12.png)
 
 #### 方差分析
 
@@ -861,7 +862,7 @@ boxplot(price~school,data=dat[dat$CATE=="海淀",],main="海淀")
 boxplot(price~school,data=dat[dat$CATE=="西城",],main="西城")
 ```
 
-![p13](../pictures/p13.png)
+![p13](./pictures/p13.png)
 
 - 整体而言(不考虑学区因素)，西城区与海淀区的单位面积房价之比
 
@@ -918,5 +919,5 @@ exp(price)
     - 小区位置(如：地处几环？)
     - 小区环境(如：绿化情况)
     - 周边配套(如：商圈、医院等)
-    - .......
+    - ....
 2. 各城市情况不一致，需要进一步考虑城市特有因素
