@@ -40,11 +40,11 @@ output: html_document
 
 ## 数据说明（１）
 
-![](../picture/p1.png)
+![](./picture/p1.png)
 
 ## 数据说明（２）
 
-![](../picture/p2.png)
+![](./picture/p2.png)
 
 ## 数据描述与建模
 
@@ -54,21 +54,21 @@ output: html_document
 
 ## 自变量：驾驶人因素
 
-![](../picture/p3.png)
+![](./picture/p3.png)
 
 - 出险和未出险驾驶人年龄的平均水平（中位数）差异并不明显
 - 出险驾驶人的**驾龄**平均水平（中位数）要明显低于未出险的驾驶人
 
 ## 自变量：驾驶人因素
 
-![](../picture/p4.png)
+![](./picture/p4.png)
 
 - 女性驾驶人出险比例更高，样本量小于男性驾驶人
 - 未婚驾驶人出险比例略高，样本量远小于已婚驾驶人
 
 ## 自变量：汽车因素
 
-![](../picture/p5.png)
+![](./picture/p5.png)
 
 - 新车出险率更高
     - 年龄变量被离散化：
@@ -82,18 +82,18 @@ output: html_document
     
 ## 自变量：汽车因素
 
-![](../picture/p6.png)
+![](./picture/p6.png)
 
 - 有防盗装置、有固定车位、进口车以及私人车的出险率略高
 - 注意：在有无防盗装置、有无固定车位、是否进口车和所有者性质的不同水平之间，样本量的分布不均匀
 
 ## Logistic回归模型－－全模型
 
-![](../picture/p7.png)
+![](./picture/p7.png)
 
 ## AIC模型和BIC模型
 
-![](../picture/p8.png)
+![](./picture/p8.png)
 
 ## 模型选择
 
@@ -103,7 +103,7 @@ output: html_document
 
 ## ROC曲线
 
-![](../picture/p9.png)
+![](./picture/p9.png)
 
 - 预测精度的评价标准：AUC值（AUC是ROC曲线下方的面积，反应模型的预测精度）
     - 全模型：0.6253
@@ -143,7 +143,7 @@ output: html_document
 
 ## ROC曲线和最佳阈值
 
-![](../picture/p10.png)
+![](./picture/p10.png)
 
 - 预测的最佳阈值p0=0.318
     - 预测概率>=p0，预测为出险
@@ -154,7 +154,7 @@ output: html_document
 
 ## 混淆矩阵（在最佳阈值情况下）
 
-![](../picture/p11.png)
+![](./picture/p11.png)
 
 - 整体错判率：(1024+572)/4233 = 37.7%
 - TPR：633/1205 = 52.5%
@@ -177,7 +177,7 @@ output: html_document
     - 占总人群的20%
     - 实际出险率只有17%，而样本的整体出险率为28%
     
-![](../picture/p12.png)
+![](./picture/p12.png)
 
 ## 未来研究方向
 

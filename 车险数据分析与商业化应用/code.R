@@ -1,8 +1,8 @@
 library(vcd)　#描述分析画图所需要的vcd包
 library(pROC) #画ROC曲线和计算AUC所用到的pROC包
 
-setwd('/home/wenshuigen/code/case/车险数据分析与商业化应用/code/') #设置工作路径
-dat0 <- read.csv("../data/auto.csv")		#读取车险数据，命名成dat0
+setwd('/home/wenshuigen/code/case/车险数据分析与商业化应用') #设置工作路径
+dat0 <- read.csv("auto.csv")		#读取车险数据，命名成dat0
 summary(dat0)				                    #dat0的描述统计量
 n <- dim(dat0)[1]				                #样本量
 
