@@ -204,11 +204,13 @@ $(document).ready(function () {
 <div class="section level3">
 <h3>第三步：数据预处理</h3>
 <ol style="list-style-type: decimal">
-<li>数据清洗：从业务以及建模的相关需要方面考虑,筛选出需要的数据
+<li>数据清洗：从业务以及建模的相关需要方面考虑,筛选出需要的数据</li>
+</ol>
 <ul>
 <li>丢弃票价为空的数据。</li>
 <li>丢弃票价为0、平均折扣率不为0、总飞行公里数大于0的数据。</li>
-</ul></li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
 <li>属性规约:原始数据中属性太多,根据LRFMC模型,选择与其相关的六个属性,删除不相关、弱相关或冗余的属性。</li>
 </ol>
 <div class="figure">
@@ -216,16 +218,44 @@ $(document).ready(function () {
 
 </div>
 <ol start="3" style="list-style-type: decimal">
-<li>数据变换
-<ul>
-<li><strong>属性构造：</strong>原始数据中并没有直接给出LRFMC五个指标,需要构造这五个指标。
-<ul>
-<li>L=LOAD_TIME - FFP_DATE：会员入会时间距观测窗口结束的月数 = 观测窗口的结束时间 - 入会时间[单位:月]</li>
-<li>R=LAST_TO_END：客户最近一次乘坐公司飞机距观测窗口结束的天数 = 最后一次乘机时间至观察窗口末端时长[单位：天]</li>
-<li>F=FLIGHT_COUNT：客户在观测窗口内乘坐公司飞机的次数 = 观测窗口的飞行次数[单位：次]　　　 　　　　- M=SEG_KM_SUM：客户在观测时间内在公司累计的飞行里程 = 观测窗口总飞行公里数[单位：公里]　　 　　　　- C=AVG_DISCOUNT：客户在观测时间内乘坐舱位所对应的折扣系数的平均值 = 平均折扣率[单位：无]　　 　　- <strong>数据标准化：</strong>因五个指标的取值范围数据差异较大，为了消除数量级数据带来的影响,需要对数据进行标准化处理。</li>
-</ul></li>
-</ul></li>
+<li>数据变换</li>
 </ol>
+<ul>
+<li><strong>属性构造：</strong>原始数据中并没有直接给出LRFMC五个指标,需要构造这五个指标</li>
+</ul>
+<table>
+<thead>
+<tr class="header">
+<th align="center">属性</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">L=LOAD_TIME-FFP_DATE</td>
+<td align="center">会员入会时间距观测窗口结束的月数 = 观测窗口的结束时间-入会时间[单位:月]</td>
+</tr>
+<tr class="even">
+<td align="center">R=LAST_TO_END</td>
+<td align="center">客户最近一次乘坐公司飞机距观测窗口结束的天数 = 最后一次乘机时间至观察窗口末端时长[单位：天]</td>
+</tr>
+<tr class="odd">
+<td align="center">F=FLIGHT_COUNT</td>
+<td align="center">客户在观测窗口内乘坐公司飞机的次数 = 观测窗口的飞行次数</td>
+</tr>
+<tr class="even">
+<td align="center">M=SEG_KM_SUM</td>
+<td align="center">客户在观测时间内在公司累计的飞行里程 = 观测窗口总飞行公里数</td>
+</tr>
+<tr class="odd">
+<td align="center">C=AVG_DISCOUNT</td>
+<td align="center">客户在观测时间内乘坐舱位所对应的折扣系数的平均值 = 平均折扣率</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>数据标准化：</strong>因五个指标的取值范围数据差异较大，为了消除数量级数据带来的影响,需要对数据进行标准化处理。</li>
+</ul>
 <table>
 <thead>
 <tr class="header">
@@ -329,7 +359,7 @@ $(document).ready(function () {
 <div class="section level4">
 <h4>　模型应用</h4>
 <p>根据各个客户群的特征,可采取一些营销手段和策略。如：</p>
-<ol style="list-style-type: lower-alpha">
+<ol style="list-style-type: decimal">
 <li>会员的升级与保级</li>
 <li>首次兑换</li>
 <li>交叉销售</li>
