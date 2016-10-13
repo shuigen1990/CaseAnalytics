@@ -28,7 +28,13 @@ output: html_document
     - Progressive,State Farm,Insure the Box等保险公司先后推出各类基于驾驶行为折扣保费和UBI保险产品
 - 国内的UBI模式车险业务尚处于探索阶段，但已具备推出的基础
 
-## 数据来源
+## 数据来源(1)
+
+![](./picture/p1.png)
+
+## 数据来源(2)
+
+![](./picture/p2.png)
 
 - 数据来自某保险公司
 - 因变量：某年度车险理赔金额
@@ -37,14 +43,6 @@ output: html_document
 - 将因变量转换为0-1变量：某年度是否出险
 - 自变量：汽车因素和驾驶人因素，共10个
 - 样本量：n=4233辆车
-
-## 数据说明（１）
-
-![](./picture/p1.png)
-
-## 数据说明（２）
-
-![](./picture/p2.png)
 
 ## 数据描述与建模
 
