@@ -111,6 +111,7 @@ legend(0.2,0.2,c("Full","AIC","BIC"),col=c("black","red","blue"),lty=1:3,lwd=3)
 ### 最终选择AIC模型，在ROC曲线上标注AUC值和最佳阈值
 par(mfrow=c(1,1))
 plot(roc.aic,print.auc=T,print.auc.x=0.4,print.auc.y=0.4,print.thres=T,
+auc.polygon=T,max.auc.polygon=T, auc.polygon.col='skyblue',
      print.auc.cex=1.5,print.thres.cex=1.5,main="AIC模型的ROC曲线")
 
 ### 混淆矩阵
